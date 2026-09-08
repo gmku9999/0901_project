@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>홍길동의 블로그</title>
+    <title>게시글 | 홍길동의 블로그</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -16,7 +16,7 @@
           <span></span>
         </button>
         <nav class="site-nav" aria-label="주요 메뉴">
-          <a class="active" href="index.html">홈</a>
+          <a href="index.html">홈</a>
           <a class="auth-only" href="write.html">글쓰기</a>
           <a class="auth-only" href="profile.html">프로필</a>
           <a class="guest-only" href="login.html">로그인</a>
@@ -27,24 +27,26 @@
     </header>
 
     <main>
-      <section class="section page-hero">
-        <div class="container page-panel">
-          <p class="section-label">Blog</p>
-          <h1>사용자 경험을 생각하며 웹을 만드는 홍길동입니다.</h1>
-          <p>공부하고 만든 것들을 기록하는 개인 블로그입니다.</p>
-        </div>
-      </section>
-
-      <section class="section muted">
-        <div class="container">
-          <div class="section-heading">
-            <div>
-              <p class="section-label">Posts</p>
-              <h2>게시글</h2>
+      <section class="section">
+        <div class="container narrow">
+          <div id="postDetail">
+            <div class="post-detail-head">
+              <p class="post-meta">
+                <span id="postAuthor"></span>
+                <span id="postDate"></span>
+              </p>
+              <h1 id="postTitle"></h1>
             </div>
-            <p>최신 게시글부터 순서대로 보여줍니다.</p>
+            <div id="postBody" class="post-detail-body"></div>
+            <div id="postOwnerActions" class="post-detail-actions" hidden>
+              <a id="editPostLink" class="button secondary" href="write.html">수정</a>
+              <button id="deletePostBtn" type="button" class="button danger">삭제</button>
+            </div>
           </div>
-          <div id="postList" class="post-list" aria-live="polite"></div>
+          <div id="postNotFound" class="empty-state" hidden>
+            <p>게시글을 찾을 수 없습니다.</p>
+            <a class="button primary" href="index.html">목록으로 돌아가기</a>
+          </div>
         </div>
       </section>
     </main>
@@ -57,6 +59,6 @@
 
     <script src="js/storage.js"></script>
     <script src="js/nav.js"></script>
-    <script src="js/posts.js"></script>
+    <script src="js/post-detail.js"></script>
   </body>
 </html>
