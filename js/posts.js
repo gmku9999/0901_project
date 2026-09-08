@@ -1,13 +1,4 @@
-function initPostList() {
-  const listEl = document.getElementById("postList");
-  if (!listEl) {
-    return;
-  }
-
-  const posts = getPosts()
-    .slice()
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+function renderPostCards(listEl, posts) {
   listEl.innerHTML = "";
 
   if (posts.length === 0) {
@@ -50,6 +41,26 @@ function initPostList() {
     card.append(meta, title, excerpt);
     listEl.appendChild(card);
   });
+}
+
+async function initPostList() {
+  const listEl = document.getElementById("postList");
+  if (!listEl) {
+    return;
+  }
+
+  listEl.innerHTML = '<p class="empty-state">게시글을 불러오는 중입니다...</p>';
+
+  let posts;
+  try {
+    posts = await fetchPosts();
+  } catch (error) {
+    listEl.innerHTML = '<p class="empty-state">게시글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>';
+    return;
+  }
+
+  posts = posts.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  renderPostCards(listEl, posts);
 }
 
 initPostList();

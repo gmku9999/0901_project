@@ -1,4 +1,4 @@
-function initPostForm() {
+async function initPostForm() {
   const form = document.getElementById("postForm");
   if (!form) {
     return;
@@ -13,21 +13,32 @@ function initPostForm() {
   const titleInput = document.getElementById("title");
   const contentInput = document.getElementById("content");
   const heading = document.getElementById("writeHeading");
+  const submitBtn = form.querySelector('button[type="submit"]');
 
   const editId = getQueryParam("id");
-  const editingPost = editId ? getPostById(editId) : null;
+  let editingPost = null;
 
-  if (editingPost) {
-    if (editingPost.authorUsername !== session.username) {
+  if (editId) {
+    submitBtn.disabled = true;
+    try {
+      const posts = await fetchPosts();
+      editingPost = posts.find((p) => p.id === editId);
+    } catch (error) {
+      editingPost = null;
+    }
+    submitBtn.disabled = false;
+
+    if (!editingPost || editingPost.authorUsername !== session.username) {
       window.location.href = "index.html";
       return;
     }
+
     heading.textContent = "게시글 수정";
     titleInput.value = editingPost.title;
     contentInput.value = editingPost.content;
   }
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const title = titleInput.value.trim();
@@ -48,27 +59,44 @@ function initPostForm() {
       return;
     }
 
-    const posts = getPosts();
+    submitBtn.disabled = true;
 
-    if (editingPost) {
-      const index = posts.findIndex((p) => p.id === editingPost.id);
-      posts[index] = { ...editingPost, title, content };
-      savePosts(posts);
-      window.location.href = `post.html?id=${encodeURIComponent(editingPost.id)}`;
-      return;
+    try {
+      if (editingPost) {
+        const result = await updatePostRemote({
+          id: editingPost.id,
+          title,
+          content,
+          authorUsername: session.username,
+        });
+
+        if (!result.success) {
+          window.alert(result.error || "수정에 실패했습니다.");
+          return;
+        }
+
+        window.location.href = `post.html?id=${encodeURIComponent(editingPost.id)}`;
+        return;
+      }
+
+      const result = await createPostRemote({
+        title,
+        content,
+        authorUsername: session.username,
+        authorName: session.name,
+      });
+
+      if (!result.success) {
+        window.alert(result.error || "작성에 실패했습니다.");
+        return;
+      }
+
+      window.location.href = `post.html?id=${encodeURIComponent(result.data.id)}`;
+    } catch (error) {
+      window.alert("서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      submitBtn.disabled = false;
     }
-
-    const newPost = {
-      id: `post-${Date.now()}`,
-      title,
-      content,
-      authorUsername: session.username,
-      authorName: session.name,
-      createdAt: new Date().toISOString(),
-    };
-    posts.push(newPost);
-    savePosts(posts);
-    window.location.href = `post.html?id=${encodeURIComponent(newPost.id)}`;
   });
 }
 

@@ -1,4 +1,4 @@
-function initProfilePage() {
+async function initProfilePage() {
   const guard = document.getElementById("profileGuard");
   const content = document.getElementById("profileContent");
   if (!guard || !content) {
@@ -20,11 +20,25 @@ function initProfilePage() {
   document.getElementById("profileEmail").textContent = session.email;
   document.getElementById("profileJoined").textContent = `${formatDate(session.joinedAt)} 가입`;
 
-  const myPosts = getPosts()
+  const listEl = document.getElementById("myPostList");
+  listEl.innerHTML = '<p class="form-footnote">게시글을 불러오는 중입니다...</p>';
+
+  let posts;
+  try {
+    posts = await fetchPosts();
+  } catch (error) {
+    listEl.innerHTML = "";
+    const failed = document.createElement("p");
+    failed.className = "form-footnote";
+    failed.textContent = "게시글을 불러오지 못했습니다.";
+    listEl.appendChild(failed);
+    return;
+  }
+
+  const myPosts = posts
     .filter((post) => post.authorUsername === session.username)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  const listEl = document.getElementById("myPostList");
   listEl.innerHTML = "";
 
   if (myPosts.length === 0) {
