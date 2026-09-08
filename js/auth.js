@@ -10,8 +10,9 @@ function initSignupForm() {
   const passwordInput = document.getElementById("password");
   const passwordConfirmInput = document.getElementById("passwordConfirm");
   const message = document.getElementById("signupMessage");
+  const submitBtn = form.querySelector('button[type="submit"]');
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     message.textContent = "";
     message.className = "form-message";
@@ -32,9 +33,6 @@ function initSignupForm() {
         document.getElementById("usernameError"),
         "아이디는 영문/숫자/밑줄 3~20자로 입력해주세요."
       );
-      isValid = false;
-    } else if (findUser(username)) {
-      showFormError(usernameInput, document.getElementById("usernameError"), "이미 사용 중인 아이디입니다.");
       isValid = false;
     } else {
       showFormError(usernameInput, document.getElementById("usernameError"), "");
@@ -71,22 +69,28 @@ function initSignupForm() {
       return;
     }
 
-    const users = getUsers();
-    users.push({
-      name: nameInput.value.trim(),
-      username,
-      email,
-      password,
-      joinedAt: new Date().toISOString(),
-    });
-    saveUsers(users);
-    setSession({ username, name: nameInput.value.trim() });
+    submitBtn.disabled = true;
+    setFormMessage(message, "가입 처리 중입니다...", false);
 
-    setFormMessage(message, "회원가입이 완료되었습니다. 잠시 후 홈으로 이동합니다.", false);
-    form.reset();
-    window.setTimeout(() => {
-      window.location.href = "index.html";
-    }, 900);
+    try {
+      const result = await signupRequest({ username, name: nameInput.value.trim(), email, password });
+
+      if (!result.success) {
+        setFormMessage(message, result.error || "회원가입에 실패했습니다.", true);
+        return;
+      }
+
+      setSession(result.data);
+      setFormMessage(message, "회원가입이 완료되었습니다. 잠시 후 홈으로 이동합니다.", false);
+      form.reset();
+      window.setTimeout(() => {
+        window.location.href = "index.html";
+      }, 900);
+    } catch (error) {
+      setFormMessage(message, "서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.", true);
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 }
 
@@ -99,24 +103,35 @@ function initLoginForm() {
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const message = document.getElementById("loginMessage");
+  const submitBtn = form.querySelector('button[type="submit"]');
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
-    const user = findUser(username);
 
-    if (!user || user.password !== password) {
-      setFormMessage(message, "아이디 또는 비밀번호가 올바르지 않습니다.", true);
-      return;
+    submitBtn.disabled = true;
+    setFormMessage(message, "로그인 확인 중입니다...", false);
+
+    try {
+      const result = await loginRequest({ username, password });
+
+      if (!result.success) {
+        setFormMessage(message, result.error || "아이디 또는 비밀번호가 올바르지 않습니다.", true);
+        return;
+      }
+
+      setSession(result.data);
+      setFormMessage(message, "로그인되었습니다. 잠시 후 홈으로 이동합니다.", false);
+      window.setTimeout(() => {
+        window.location.href = "index.html";
+      }, 500);
+    } catch (error) {
+      setFormMessage(message, "서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.", true);
+    } finally {
+      submitBtn.disabled = false;
     }
-
-    setSession(user);
-    setFormMessage(message, "로그인되었습니다. 잠시 후 홈으로 이동합니다.", false);
-    window.setTimeout(() => {
-      window.location.href = "index.html";
-    }, 500);
   });
 }
 

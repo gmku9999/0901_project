@@ -1,5 +1,4 @@
 const STORAGE_KEYS = {
-  users: "blog.users",
   session: "blog.session",
   posts: "blog.posts",
 };
@@ -17,24 +16,17 @@ function writeJSON(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function getUsers() {
-  return readJSON(STORAGE_KEYS.users, []);
-}
-
-function saveUsers(users) {
-  writeJSON(STORAGE_KEYS.users, users);
-}
-
-function findUser(username) {
-  return getUsers().find((user) => user.username === username);
-}
-
 function getSession() {
   return readJSON(STORAGE_KEYS.session, null);
 }
 
 function setSession(user) {
-  writeJSON(STORAGE_KEYS.session, { username: user.username, name: user.name });
+  writeJSON(STORAGE_KEYS.session, {
+    username: user.username,
+    name: user.name,
+    email: user.email,
+    joinedAt: user.joinedAt,
+  });
 }
 
 function clearSession() {

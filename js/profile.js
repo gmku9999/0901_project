@@ -12,17 +12,16 @@ function initProfilePage() {
     return;
   }
 
-  const user = findUser(session.username);
   guard.hidden = true;
   content.hidden = false;
 
-  document.getElementById("profileName").textContent = user.name;
-  document.getElementById("profileUsername").textContent = `@${user.username}`;
-  document.getElementById("profileEmail").textContent = user.email;
-  document.getElementById("profileJoined").textContent = `${formatDate(user.joinedAt)} 가입`;
+  document.getElementById("profileName").textContent = session.name;
+  document.getElementById("profileUsername").textContent = `@${session.username}`;
+  document.getElementById("profileEmail").textContent = session.email;
+  document.getElementById("profileJoined").textContent = `${formatDate(session.joinedAt)} 가입`;
 
   const myPosts = getPosts()
-    .filter((post) => post.authorUsername === user.username)
+    .filter((post) => post.authorUsername === session.username)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const listEl = document.getElementById("myPostList");
