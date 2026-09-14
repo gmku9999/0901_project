@@ -1,6 +1,10 @@
 const STORAGE_KEYS = {
   session: "blog.session",
+  postsCache: "blog.postsCache",
+  draftPrefix: "blog.draft.",
 };
+
+const POSTS_CACHE_TTL_MS = 20000;
 
 function readJSON(key, fallback) {
   try {
@@ -30,6 +34,38 @@ function setSession(user) {
 
 function clearSession() {
   localStorage.removeItem(STORAGE_KEYS.session);
+}
+
+function getCachedPosts() {
+  const cache = readJSON(STORAGE_KEYS.postsCache, null);
+  if (!cache || Date.now() - cache.savedAt > POSTS_CACHE_TTL_MS) {
+    return null;
+  }
+  return cache.posts;
+}
+
+function setCachedPosts(posts) {
+  writeJSON(STORAGE_KEYS.postsCache, { posts, savedAt: Date.now() });
+}
+
+function clearPostsCache() {
+  localStorage.removeItem(STORAGE_KEYS.postsCache);
+}
+
+function getDraftKey(postId) {
+  return `${STORAGE_KEYS.draftPrefix}${postId || "new"}`;
+}
+
+function getDraft(postId) {
+  return readJSON(getDraftKey(postId), null);
+}
+
+function saveDraft(postId, draft) {
+  writeJSON(getDraftKey(postId), { ...draft, savedAt: Date.now() });
+}
+
+function clearDraft(postId) {
+  localStorage.removeItem(getDraftKey(postId));
 }
 
 function formatDate(iso) {

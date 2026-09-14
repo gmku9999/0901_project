@@ -13,6 +13,7 @@ async function initPostForm() {
   const titleInput = document.getElementById("title");
   const contentInput = document.getElementById("content");
   const heading = document.getElementById("writeHeading");
+  const draftStatus = document.getElementById("draftStatus");
   const submitBtn = form.querySelector('button[type="submit"]');
 
   const editId = getQueryParam("id");
@@ -37,6 +38,28 @@ async function initPostForm() {
     titleInput.value = editingPost.title;
     contentInput.value = editingPost.content;
   }
+
+  const draft = getDraft(editId);
+  if (draft && (draft.title || draft.content)) {
+    titleInput.value = draft.title || "";
+    contentInput.value = draft.content || "";
+    if (draftStatus) {
+      draftStatus.textContent = `임시 저장된 내용을 불러왔습니다. (${formatDate(draft.savedAt)})`;
+    }
+  }
+
+  let draftTimer = null;
+  const scheduleDraftSave = () => {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(() => {
+      saveDraft(editId, { title: titleInput.value, content: contentInput.value });
+      if (draftStatus) {
+        draftStatus.textContent = "임시 저장됨";
+      }
+    }, 500);
+  };
+  titleInput.addEventListener("input", scheduleDraftSave);
+  contentInput.addEventListener("input", scheduleDraftSave);
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -75,6 +98,7 @@ async function initPostForm() {
           return;
         }
 
+        clearDraft(editId);
         window.location.href = `post.html?id=${encodeURIComponent(editingPost.id)}`;
         return;
       }
@@ -91,6 +115,7 @@ async function initPostForm() {
         return;
       }
 
+      clearDraft(editId);
       window.location.href = `post.html?id=${encodeURIComponent(result.data.id)}`;
     } catch (error) {
       window.alert("서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.");

@@ -21,22 +21,42 @@ async function loginRequest(credentials) {
   return apiPost("login", credentials);
 }
 
-async function fetchPosts() {
+async function fetchPosts({ forceRefresh = false } = {}) {
+  if (!forceRefresh) {
+    const cached = getCachedPosts();
+    if (cached) {
+      return cached;
+    }
+  }
+
   const result = await apiGet("posts");
   if (!result.success) {
     throw new Error(result.error || "게시글을 불러오지 못했습니다.");
   }
+  setCachedPosts(result.data);
   return result.data;
 }
 
 async function createPostRemote(post) {
-  return apiPost("createPost", post);
+  const result = await apiPost("createPost", post);
+  if (result.success) {
+    clearPostsCache();
+  }
+  return result;
 }
 
 async function updatePostRemote(post) {
-  return apiPost("updatePost", post);
+  const result = await apiPost("updatePost", post);
+  if (result.success) {
+    clearPostsCache();
+  }
+  return result;
 }
 
 async function deletePostRemote(id, authorUsername) {
-  return apiPost("deletePost", { id, authorUsername });
+  const result = await apiPost("deletePost", { id, authorUsername });
+  if (result.success) {
+    clearPostsCache();
+  }
+  return result;
 }
