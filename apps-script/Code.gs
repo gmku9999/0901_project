@@ -73,7 +73,7 @@ function doPost(e) {
   lock.waitLock(10000);
 
   try {
-    const body = JSON.parse(e.postData.getBlob().getDataAsString("UTF-8"));
+    const body = JSON.parse(e.postData.contents);
     const action = body.action;
     const payload = body.payload || {};
 
