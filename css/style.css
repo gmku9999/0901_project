@@ -643,6 +643,41 @@ body.logged-in .guest-only {
   font-weight: 700;
 }
 
+.my-post-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  transform: none;
+}
+
+.my-post-card:hover {
+  transform: none;
+}
+
+.my-post-info {
+  min-width: 0;
+}
+
+.my-post-title {
+  display: block;
+}
+
+.my-post-title h3 {
+  margin-bottom: 6px;
+}
+
+.my-post-info .post-meta {
+  margin-bottom: 0;
+}
+
+.my-post-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
 .empty-state {
   padding: 48px 20px;
   color: var(--muted);
